@@ -33,6 +33,8 @@ export default function Home({ navigation }) {
       handlePage();
     }
     if (input.length == 0) {
+      setInput("");
+
       setLoading(false);
     }
 
@@ -45,20 +47,23 @@ export default function Home({ navigation }) {
 
   useEffect(() => {
     loadMovies();
+    console.log("inicio", movie.length);
     return () => {};
   }, [page || input == ""]);
 
   useEffect(() => {
     async function loadMovies() {
+      setMovie([]);
       const response = await api.get(`/search/shows?q=${input}`);
 
       setMovie(response.data);
-      if (input.length == 0) {
-        setInput("");
-      }
     }
 
     loadMovies();
+    console.log("input", movie.length);
+    movie.forEach((dado) => {
+      console.log("dados", dado?.show?.image?.medium);
+    });
 
     return () => {};
   }, [input]);
@@ -103,7 +108,11 @@ export default function Home({ navigation }) {
       <List
         data={movie}
         keyExtractor={(item) =>
-          String(input.length == 0 ? item?.id : item?.show?.id)
+          String(
+            input.length == 0
+              ? item?.id != undefined && item?.id
+              : item?.show?.id != undefined && item.show?.id
+          )
         }
         onEndReached={(e) => loadMovies(e)}
         onEndReachedThreshold={0.1}
@@ -120,8 +129,12 @@ export default function Home({ navigation }) {
                 resizeMode="contain"
                 source={
                   input.length == 0
-                    ? { uri: item?.image?.medium }
-                    : { uri: item?.show?.image?.medium }
+                    ? item?.image?.medium != undefined && {
+                        uri: item?.image?.medium,
+                      }
+                    : item?.show?.image?.medium != undefined && {
+                        uri: item.show?.image?.medium,
+                      }
                 }
               />
             </MovieInfo>
