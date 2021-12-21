@@ -17,57 +17,60 @@ import {
   Loading,
 } from "./styles";
 
-console.disableYellowBox = true;
+//console.disableYellowBox = true;
 
 export default function Home({ navigation }) {
   const [movie, setMovie] = useState([]);
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState("");
   const [page, setPage] = useState(1);
+  const [contador, setContador] = useState(0);
 
   const url = "https://api.tvmaze.com";
 
-  async function loadMovies(e) {
+  async function loadMoviess() {
     setLoading(true);
-    if (e != undefined) {
-      handlePage();
-    }
     if (input.length == 0) {
-      setInput("");
+      //console.log("input tamanho", input.length);
+      //setMovie(null);
+      const response = await api.get(`/shows?page=${page}`);
+
+      setMovie([
+        ...movie,
+        ...response.data.slice(response.data.length - 20, response.data.length),
+      ]);
 
       setLoading(false);
+    } else {
+      if (input.length > 1) {
+        console.log("input", input.length);
+        setMovie(null);
+        const response = await api.get(`/search/shows?q=${input}`);
+        setMovie(response.data);
+
+        // hasDuplicates(movie).forEach((item) => console.log(item.show.id)); //
+        console.log("novo array tam", new Set(movie).size);
+        setLoading(false);
+      } else {
+        console.log("input||", input.length);
+        setMovie([]);
+        setLoading(false);
+      }
     }
-
-    const response = await api.get(`/shows?page=${page}`);
-
-    setMovie([...movie, ...response.data]);
-
-    setLoading(false);
   }
-
   useEffect(() => {
-    loadMovies();
-    console.log("inicio", movie.length);
-    return () => {};
-  }, [page || input == ""]);
-
+    // console.log("pagina inicial", page);
+    loadMoviess();
+  }, []);
   useEffect(() => {
-    async function loadMovies() {
-      setMovie([]);
-      const response = await api.get(`/search/shows?q=${input}`);
-
-      setMovie(response.data);
+    if (page > 1) {
+      //  console.log("pagina tem que ser maior que 1", page);
+      loadMoviess();
     }
-
-    loadMovies();
-    console.log("input", movie.length);
-    movie.forEach((dado) => {
-      console.log("dados", dado?.show?.image?.medium);
-    });
-
-    return () => {};
+  }, [page]);
+  useEffect(() => {
+    loadMoviess();
   }, [input]);
-
   const dispatch = useDispatch();
 
   function handleRedux(id) {
@@ -89,6 +92,8 @@ export default function Home({ navigation }) {
 
   function handlePage() {
     setPage(page + 1);
+    //console.log("pagina baixo", page);
+    //loadMoviess();
   }
 
   return (
@@ -104,47 +109,72 @@ export default function Home({ navigation }) {
           />
         </Form>
       </Container>
-
-      <List
-        data={movie}
-        keyExtractor={(item) =>
-          String(
-            input.length == 0
-              ? item?.id != undefined && item?.id
-              : item?.show?.id != undefined && item.show?.id
-          )
-        }
-        onEndReached={(e) => loadMovies(e)}
-        onEndReachedThreshold={0.1}
-        numColumns={3}
-        renderItem={({ item }) => (
-          <Link
-            onPress={() =>
-              handleNavigate(input.length == 0 ? item?.show?.id : item.id)
-            }
-            underlayColor="transparent"
-          >
-            <MovieInfo>
-              <ImageMovie
-                resizeMode="contain"
-                source={
-                  input.length == 0
-                    ? item?.image?.medium != undefined && {
-                        uri: item?.image?.medium,
-                      }
-                    : item?.show?.image?.medium != undefined && {
-                        uri: item.show?.image?.medium,
-                      }
-                }
+      {input == "" ? (
+        <List
+          data={movie}
+          keyExtractor={(item) => String(item.id)}
+          key={(item) => item.id}
+          onEndReached={() => {
+            console.log("pagina acima", page);
+            handlePage();
+          }}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={
+            <Loading>
+              <ActivityIndicator
+                animating={loading}
+                size={40}
+                color="#E02041"
               />
-            </MovieInfo>
-          </Link>
-        )}
-      />
-      {loading && (
-        <Loading>
-          <ActivityIndicator size={40} color="#E02041" />
-        </Loading>
+            </Loading>
+          }
+          numColumns={3}
+          renderItem={({ item }) => (
+            <Link
+              onPress={() =>
+                //handleNavigate(input.length == 0 ? item?.show?.id : item.id)
+                console.log("navegar(1)" + item?.show?.id + "|" + item.id)
+              }
+              underlayColor="transparent"
+            >
+              <MovieInfo>
+                <ImageMovie
+                  resizeMode="contain"
+                  source={{
+                    uri: item?.image?.medium,
+                  }}
+                />
+              </MovieInfo>
+            </Link>
+          )}
+        ></List>
+      ) : (
+        <List
+          data={movie}
+          keyExtractor={(item) => String(item.show?.id)}
+          key={(item) => item.id}
+          onEndReached={console.log("chamou o segundo flex")}
+          onEndReachedThreshold={0.1}
+          numColumns={3}
+          renderItem={({ item }) => (
+            <Link
+              onPress={() =>
+                //handleNavigate(input.length == 0 ? item?.show?.id : item.id)
+                console.log("navegar(2)" + item?.show?.id + "|" + item.id)
+              }
+              underlayColor="transparent"
+            >
+              <MovieInfo>
+                <ImageMovie
+                  resizeMode="contain"
+                  source={{
+                    uri: item?.show?.image?.medium,
+                  }}
+                />
+              </MovieInfo>
+            </Link>
+          )}
+        ></List>
       )}
     </Background>
   );

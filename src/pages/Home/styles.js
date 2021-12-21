@@ -4,6 +4,7 @@ const windowWidth = Dimensions.get("window").width;
 
 export const Background = styled.ImageBackground`
   flex: 1;
+  al
 `;
 
 export const Container = styled.View`
@@ -27,10 +28,11 @@ export const Input = styled.TextInput`
 
 export const List = styled.FlatList`
   margin-top: 10px;
-  margin-horizontal: ${(windowWidth * 6) / 100};
 `;
 
-export const Link = styled.TouchableHighlight``;
+export const Link = styled.TouchableHighlight`
+  flex: 1;
+`;
 
 export const MovieInfo = styled.View`
   align-items: center;
