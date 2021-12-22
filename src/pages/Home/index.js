@@ -24,13 +24,17 @@ export default function Home({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState("");
   const [page, setPage] = useState(1);
-  const [contador, setContador] = useState(0);
+  const [contador, setContador] = useState(2);
+  const [digitado, setDigitado] = useState(false);
 
   const url = "https://api.tvmaze.com";
 
   async function loadMoviess() {
     setLoading(true);
-    if (input.length == 0) {
+    if (input.length == 0 && digitado == false) {
+      console.log(
+        "informacoes" + input.length + " " + page + " " + movie.length
+      );
       if (page == 1) {
         //console.log("input tamanho", input.length);
         //setMovie(null);
@@ -49,7 +53,9 @@ export default function Home({ navigation }) {
     } else {
       if (input.length > 1) {
         console.log("input", input.length);
+        setDigitado(true);
         setMovie([]);
+
         const response = await api.get(`/search/shows?q=${input}`);
         setMovie(response.data);
 
@@ -57,9 +63,15 @@ export default function Home({ navigation }) {
         console.log("novo array tam", new Set(movie).size);
         setLoading(false);
       } else {
-        console.log("input||", input.length);
-        setMovie([]);
-        setLoading(false);
+        if (digitado == true && input.length == 0) {
+          setMovie([]);
+          setPage(1);
+          setDigitado(false);
+          const response = await api.get(`/shows?page=${page}`);
+          setMovie(response.data);
+          setLoading(false);
+          console.log("input||", input.length);
+        }
       }
     }
   }
@@ -104,15 +116,18 @@ export default function Home({ navigation }) {
         setPage(page + 1);
       } else {
         setPage(1);
+        j;
       }
-
-      const response = await api.get(`/shows?page=${page}`);
-      console.log("page dentro||", page);
-      setMovie([
-        ...movie,
-        ...response.data /*.slice(response.data.length - 20, response.data.length)*/,
-      ]);
-
+      console.log("jjjj" + page + "  " + contador);
+      if (page == contador) {
+        setContador(contador + 1);
+        const response = await api.get(`/shows?page=${page}`);
+        console.log("page dentro||" + page + "  " + contador);
+        setMovie([
+          ...movie,
+          ...response.data /*.slice(response.data.length - 20, response.data.length)*/,
+        ]);
+      }
       setLoading(false);
       //console.log("pagina baixo", page);
       //loadMoviess();
