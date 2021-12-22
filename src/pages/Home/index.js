@@ -31,20 +31,25 @@ export default function Home({ navigation }) {
   async function loadMoviess() {
     setLoading(true);
     if (input.length == 0) {
-      //console.log("input tamanho", input.length);
-      //setMovie(null);
-      const response = await api.get(`/shows?page=${page}`);
+      if (page == 1) {
+        //console.log("input tamanho", input.length);
+        //setMovie(null);
+        const response = await api.get(`/shows?page=${page}`);
+        console.log("page||", page);
+        setMovie([
+          ...movie,
+          ...response.data /*.slice(
+            response.data.length - 20,
+            response.data.length
+          ),*/,
+        ]);
 
-      setMovie([
-        ...movie,
-        ...response.data.slice(response.data.length - 20, response.data.length),
-      ]);
-
-      setLoading(false);
+        setLoading(false);
+      }
     } else {
       if (input.length > 1) {
         console.log("input", input.length);
-        setMovie(null);
+        setMovie([]);
         const response = await api.get(`/search/shows?q=${input}`);
         setMovie(response.data);
 
@@ -60,6 +65,7 @@ export default function Home({ navigation }) {
   }
   useEffect(() => {
     // console.log("pagina inicial", page);
+    console.log("chamada inicial");
     loadMoviess();
   }, []);
   useEffect(() => {
@@ -69,6 +75,7 @@ export default function Home({ navigation }) {
     }
   }, [page]);
   useEffect(() => {
+    console.log("chamada input");
     loadMoviess();
   }, [input]);
   const dispatch = useDispatch();
@@ -90,10 +97,26 @@ export default function Home({ navigation }) {
     setInput(e);
   }
 
-  function handlePage() {
-    setPage(page + 1);
-    //console.log("pagina baixo", page);
-    //loadMoviess();
+  async function handlePage() {
+    if (input.length > 0 || input.length == 0) {
+      setLoading(true);
+      if (input.length == 0) {
+        setPage(page + 1);
+      } else {
+        setPage(1);
+      }
+
+      const response = await api.get(`/shows?page=${page}`);
+      console.log("page dentro||", page);
+      setMovie([
+        ...movie,
+        ...response.data /*.slice(response.data.length - 20, response.data.length)*/,
+      ]);
+
+      setLoading(false);
+      //console.log("pagina baixo", page);
+      //loadMoviess();
+    }
   }
 
   return (
@@ -112,28 +135,32 @@ export default function Home({ navigation }) {
       {input == "" ? (
         <List
           data={movie}
-          keyExtractor={(item) => String(item.id)}
-          key={(item) => item.id}
+          keyExtractor={(item, index) => String(index)}
+          // key={(item) => item.id}
+
+          onEndReachedThreshold={0.5}
           onEndReached={() => {
-            console.log("pagina acima", page);
             handlePage();
           }}
-          onEndReachedThreshold={0.1}
+          //onEndReached={handlePage}
           ListFooterComponent={
-            <Loading>
-              <ActivityIndicator
-                animating={loading}
-                size={40}
-                color="#E02041"
-              />
-            </Loading>
+            <ActivityIndicator animating={loading} size={50} color="#E02041" />
           }
           numColumns={3}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <Link
               onPress={() =>
                 //handleNavigate(input.length == 0 ? item?.show?.id : item.id)
-                console.log("navegar(1)" + item?.show?.id + "|" + item.id)
+                console.log(
+                  "navegar(" +
+                    page +
+                    ")" +
+                    item?.show?.id +
+                    "|" +
+                    item.id +
+                    "||" +
+                    index
+                )
               }
               underlayColor="transparent"
             >
@@ -151,16 +178,18 @@ export default function Home({ navigation }) {
       ) : (
         <List
           data={movie}
-          keyExtractor={(item) => String(item.show?.id)}
-          key={(item) => item.id}
+          keyExtractor={(item, index) => String(index)}
+          //key={(item) => item.id}
           onEndReached={console.log("chamou o segundo flex")}
           onEndReachedThreshold={0.1}
           numColumns={3}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <Link
               onPress={() =>
                 //handleNavigate(input.length == 0 ? item?.show?.id : item.id)
-                console.log("navegar(2)" + item?.show?.id + "|" + item.id)
+                console.log(
+                  "navegar(2)" + item?.show?.id + "|" + item.id + "||" + index
+                )
               }
               underlayColor="transparent"
             >
