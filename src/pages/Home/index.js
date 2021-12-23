@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import { StatusBar, ActivityIndicator } from "react-native";
 
@@ -16,6 +16,7 @@ import {
   Link,
   Loading,
 } from "./styles";
+import { set } from "react-native-reanimated";
 
 //console.disableYellowBox = true;
 
@@ -25,72 +26,68 @@ export default function Home({ navigation }) {
   const [input, setInput] = useState("");
   const [page, setPage] = useState(1);
   const [contador, setContador] = useState(2);
-  const [digitado, setDigitado] = useState(false);
+  const [digitado, setDigitado] = useState(undefined);
 
   const url = "https://api.tvmaze.com";
 
-  async function loadMoviess() {
-    setLoading(true);
-    if (input.length == 0 && digitado == false) {
-      console.log(
-        "informacoes" + input.length + " " + page + " " + movie.length
-      );
-      if (page == 1) {
-        //console.log("input tamanho", input.length);
-        //setMovie(null);
-        const response = await api.get(`/shows?page=${page}`);
-        console.log("page||", page);
-        setMovie([
-          ...movie,
-          ...response.data /*.slice(
-            response.data.length - 20,
-            response.data.length
-          ),*/,
-        ]);
-
-        setLoading(false);
-      }
-    } else {
-      if (input.length > 1) {
-        console.log("input", input.length);
-        setDigitado(true);
-        setMovie([]);
-
-        const response = await api.get(`/search/shows?q=${input}`);
-        setMovie(response.data);
-
-        // hasDuplicates(movie).forEach((item) => console.log(item.show.id)); //
-        console.log("novo array tam", new Set(movie).size);
-        setLoading(false);
-      } else {
-        if (digitado == true && input.length == 0) {
-          setMovie([]);
-          setPage(1);
-          setDigitado(false);
-          const response = await api.get(`/shows?page=${page}`);
-          setMovie(response.data);
-          setLoading(false);
-          console.log("input||", input.length);
-        }
-      }
-    }
-  }
   useEffect(() => {
-    // console.log("pagina inicial", page);
-    console.log("chamada inicial");
+    console.log("use Memo");
     loadMoviess();
-  }, []);
-  useEffect(() => {
-    if (page > 1) {
-      //  console.log("pagina tem que ser maior que 1", page);
-      loadMoviess();
+    console.log(input.length == 0 && digitado == true);
+
+    return () =>
+      page == 1 && input.length > 0 && digitado == false && setMovie([]);
+  }, [input, page]);
+
+  const loadMoviess = useCallback(async () => {
+    console.log(
+      "informacoes " +
+        " tam " +
+        input.length +
+        " tam filmes " +
+        movie.length +
+        " digitado " +
+        digitado
+    );
+
+    if (
+      (input.length == 0 && digitado == undefined) ||
+      (input.length == 0 && digitado == true)
+    ) {
+      setLoading(true);
+      console.log("filmes", movie.length);
+
+      setDigitado(false);
+
+      console.log("filmes||", movie.length);
+      const response = await api.get(`/shows?page=${page}`);
+      console.log("1º if page||", page + " tamanho" + response.data.length);
+      setMovie([
+        ...movie,
+        ...response.data /*.slice(
+        response.data.length - 20,
+        response.data.length
+      ),*/,
+      ]);
+      setLoading(false);
     }
-  }, [page]);
-  useEffect(() => {
-    console.log("chamada input");
-    loadMoviess();
-  }, [input]);
-  const dispatch = useDispatch();
+
+    if (
+      (input.length > 0 && digitado == false) ||
+      (input.length > 0 && digitado == true)
+    ) {
+      console.log("3º if page||", page);
+      // setMovie([]);
+      setPage(1);
+      const response = await api.get(`/search/shows?q=${input}`);
+      setMovie(response.data);
+      setDigitado(true);
+    }
+    if (input.length == 1 && digitado == true) {
+      // loadMoviess();
+      setMovie([]);
+    }
+  }, [page, input]);
 
   function handleRedux(id) {
     dispatch({
@@ -98,7 +95,6 @@ export default function Home({ navigation }) {
       id,
     });
   }
-
   function handleNavigate(id) {
     navigation.navigate("Details", { id });
 
@@ -106,34 +102,15 @@ export default function Home({ navigation }) {
   }
 
   function handleInput(e) {
+    console.log(e);
     setInput(e);
   }
-
   async function handlePage() {
-    if (input.length > 0 || input.length == 0) {
-      setLoading(true);
-      if (input.length == 0) {
-        setPage(page + 1);
-      } else {
-        setPage(1);
-        j;
-      }
-      console.log("jjjj" + page + "  " + contador);
-      if (page == contador) {
-        setContador(contador + 1);
-        const response = await api.get(`/shows?page=${page}`);
-        console.log("page dentro||" + page + "  " + contador);
-        setMovie([
-          ...movie,
-          ...response.data /*.slice(response.data.length - 20, response.data.length)*/,
-        ]);
-      }
-      setLoading(false);
-      //console.log("pagina baixo", page);
-      //loadMoviess();
-    }
-  }
+    console.log("pagina", page);
 
+    setPage(page + 1);
+    setDigitado(undefined);
+  }
   return (
     <Background source={bg}>
       <Container>
@@ -153,10 +130,11 @@ export default function Home({ navigation }) {
           keyExtractor={(item, index) => String(index)}
           // key={(item) => item.id}
 
-          onEndReachedThreshold={0.5}
+          onEndReachedThreshold={0.01}
           onEndReached={() => {
             handlePage();
           }}
+          scrollEnabled={!loading}
           //onEndReached={handlePage}
           ListFooterComponent={
             <ActivityIndicator animating={loading} size={50} color="#E02041" />
