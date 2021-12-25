@@ -4,7 +4,6 @@ const windowWidth = Dimensions.get("window").width;
 
 export const Background = styled.ImageBackground`
   flex: 1;
-  al
 `;
 
 export const Container = styled.View`

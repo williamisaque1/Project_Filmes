@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
-import { StatusBar, ActivityIndicator } from "react-native";
+import { StatusBar, ActivityIndicator, FlatList } from "react-native";
 
 import api from "../../services/api";
 import bg from "../../assets/images/bg.jpg";
@@ -17,6 +17,7 @@ import {
   Loading,
 } from "./styles";
 import { set } from "react-native-reanimated";
+import Skeleton from "../../components/Skeleton component/Skeleton";
 
 //console.disableYellowBox = true;
 
@@ -26,7 +27,8 @@ export default function Home({ navigation }) {
   const [input, setInput] = useState("");
   const [page, setPage] = useState(1);
   const [contador, setContador] = useState(2);
-  const [digitado, setDigitado] = useState(undefined);
+  const [digitado, setDigitado] = useState(false);
+  const [newMovie, setNewMovie] = useState([]);
 
   const url = "https://api.tvmaze.com";
 
@@ -35,11 +37,13 @@ export default function Home({ navigation }) {
     loadMoviess();
     console.log(input.length == 0 && digitado == true);
 
-    return () =>
-      page == 1 && input.length > 0 && digitado == false && setMovie([]);
-  }, [input, page]);
+    return () => {
+      input.length > 0 && setNewMovie([]);
+      console.log("acionado");
+    };
+  }, [input]);
 
-  const loadMoviess = useCallback(async () => {
+  async function loadMoviess() {
     console.log(
       "informacoes " +
         " tam " +
@@ -49,27 +53,55 @@ export default function Home({ navigation }) {
         " digitado " +
         digitado
     );
+    if (input.length == 0 && (digitado == false || digitado == true)) {
+      const response = await api.get(`/shows?page=${page}`);
 
+      setMovie([
+        ...movie,
+        ...response?.data /*.slice(
+        response.data.length - 20,
+        response.data.length**/,
+      ]);
+      setLoading(false);
+      setDigitado(false);
+      setPage(page + 1);
+    } else {
+      const response = await api.get(`/search/shows?q=${input}`);
+      setNewMovie(response.data);
+      setDigitado(true);
+    }
+
+    /*
     if (
       (input.length == 0 && digitado == undefined) ||
       (input.length == 0 && digitado == true)
     ) {
-      setLoading(true);
       console.log("filmes", movie.length);
 
       setDigitado(false);
 
       console.log("filmes||", movie.length);
+      console.log("1º if page||", page + " tamanho" + response?.data.length);
       const response = await api.get(`/shows?page=${page}`);
-      console.log("1º if page||", page + " tamanho" + response.data.length);
+
       setMovie([
         ...movie,
-        ...response.data /*.slice(
+        ...response?.data /*.slice(
         response.data.length - 20,
         response.data.length
-      ),*/,
+      ),*/
+    /*,
       ]);
+
+      console.log(" tamanho " + movie.length);
+      //
       setLoading(false);
+      setPage(page + 1);
+      //setDigitado(undefined);
+    }
+    if (input.length == 0 && digitado == false && page > 1) {
+      console.log("||| " + input.length + "  " + digitado + "  " + page);
+      setDigitado(undefined);
     }
 
     if (
@@ -85,9 +117,11 @@ export default function Home({ navigation }) {
     }
     if (input.length == 1 && digitado == true) {
       // loadMoviess();
+
       setMovie([]);
     }
-  }, [page, input]);
+    */
+  }
 
   function handleRedux(id) {
     dispatch({
@@ -108,9 +142,10 @@ export default function Home({ navigation }) {
   async function handlePage() {
     console.log("pagina", page);
 
-    setPage(page + 1);
-    setDigitado(undefined);
+    loadMoviess();
+    // setDigitado(undefined);
   }
+
   return (
     <Background source={bg}>
       <Container>
@@ -123,21 +158,29 @@ export default function Home({ navigation }) {
             onChangeText={(e) => handleInput(e)}
           />
         </Form>
+        <FlatList> </FlatList>
       </Container>
       {input == "" ? (
         <List
           data={movie}
           keyExtractor={(item, index) => String(index)}
-          // key={(item) => item.id}
-
+          initialNumToRender={50}
           onEndReachedThreshold={0.01}
-          onEndReached={() => {
+          onEndReached={(event) => {
+            setLoading(true);
             handlePage();
           }}
           scrollEnabled={!loading}
-          //onEndReached={handlePage}
           ListFooterComponent={
-            <ActivityIndicator animating={loading} size={50} color="#E02041" />
+            movie.length == 0 && input.length == 0 ? (
+              <></>
+            ) : (
+              <ActivityIndicator
+                animating={loading}
+                size={50}
+                color="#E02041"
+              />
+            )
           }
           numColumns={3}
           renderItem={({ item, index }) => (
@@ -170,10 +213,10 @@ export default function Home({ navigation }) {
         ></List>
       ) : (
         <List
-          data={movie}
+          data={newMovie}
           keyExtractor={(item, index) => String(index)}
           //key={(item) => item.id}
-          onEndReached={console.log("chamou o segundo flex")}
+          //onEndReached={console.log("chamou o segundo flex")}
           onEndReachedThreshold={0.1}
           numColumns={3}
           renderItem={({ item, index }) => (
