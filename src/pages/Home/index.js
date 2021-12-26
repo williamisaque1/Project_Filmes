@@ -1,6 +1,17 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useDispatch } from "react-redux";
-import { StatusBar, ActivityIndicator, FlatList } from "react-native";
+import {
+  StatusBar,
+  ActivityIndicator,
+  FlatList,
+  Dimensions,
+} from "react-native";
 
 import api from "../../services/api";
 import bg from "../../assets/images/bg.jpg";
@@ -29,7 +40,9 @@ export default function Home({ navigation }) {
   const [contador, setContador] = useState(2);
   const [digitado, setDigitado] = useState(false);
   const [newMovie, setNewMovie] = useState([]);
-
+  const indice = useRef(null);
+  const { width, height } = Dimensions.get("window");
+  console.log("widht " + width + "  " + "height  " + height);
   const url = "https://api.tvmaze.com";
 
   useEffect(() => {
@@ -43,7 +56,7 @@ export default function Home({ navigation }) {
     };
   }, [input]);
 
-  async function loadMoviess() {
+  async function loadMoviess(pagina) {
     console.log(
       "informacoes " +
         " tam " +
@@ -51,10 +64,26 @@ export default function Home({ navigation }) {
         " tam filmes " +
         movie.length +
         " digitado " +
-        digitado
+        digitado +
+        "pagina " +
+        page
     );
     if (input.length == 0 && (digitado == false || digitado == true)) {
-      const response = await api.get(`/shows?page=${page}`);
+      if (page > 1 && digitado == true) {
+        console.log("|||||page entrando " + page + "pagina " + " |||||");
+        const clear = setTimeout(() => {
+          indice.current?.scrollToIndex({
+            index: Math.round((245 / 3) * page - 1),
+            viewOffset: 180,
+            viewPositio: 0,
+            animated: false,
+          });
+          console.log("time out");
+          clearTimeout(clear);
+        }, 500);
+      }
+      console.log("page entrando " + page);
+      const response = await api.get(`/shows?page=${pagina ? pagina : page}`);
 
       setMovie([
         ...movie,
@@ -63,12 +92,30 @@ export default function Home({ navigation }) {
         response.data.length**/,
       ]);
       setLoading(false);
+      console.log(
+        "informacoes dentro do if " +
+          " tam " +
+          input.length +
+          " tam filmes " +
+          movie.length +
+          " digitado " +
+          digitado
+      );
+
       setDigitado(false);
-      setPage(page + 1);
     } else {
       const response = await api.get(`/search/shows?q=${input}`);
       setNewMovie(response.data);
       setDigitado(true);
+      console.log(
+        "informacoes dentro do else " +
+          " tam " +
+          input.length +
+          " tam filmes " +
+          newMovie.length +
+          " digitado " +
+          digitado
+      );
     }
 
     /*
@@ -142,9 +189,17 @@ export default function Home({ navigation }) {
   async function handlePage() {
     console.log("pagina", page);
 
-    loadMoviess();
+    loadMoviess(page + 1);
+    setPage(page + 1);
+
     // setDigitado(undefined);
   }
+
+  const getitem = (data, index) => ({
+    length: 180,
+    offset: 180 * index,
+    index,
+  });
 
   return (
     <Background source={bg}>
@@ -163,13 +218,17 @@ export default function Home({ navigation }) {
       {input == "" ? (
         <List
           data={movie}
+          ref={indice}
           keyExtractor={(item, index) => String(index)}
           initialNumToRender={50}
           onEndReachedThreshold={0.01}
           onEndReached={(event) => {
+            console.log(event);
             setLoading(true);
+
             handlePage();
           }}
+          getItemLayout={getitem}
           scrollEnabled={!loading}
           ListFooterComponent={
             movie.length == 0 && input.length == 0 ? (
