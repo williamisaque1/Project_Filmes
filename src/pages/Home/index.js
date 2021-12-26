@@ -73,36 +73,38 @@ export default function Home({ navigation }) {
         console.log("|||||page entrando " + page + "pagina " + " |||||");
         const clear = setTimeout(() => {
           indice.current?.scrollToIndex({
-            index: Math.round((245 / 3) * page - 1),
+            index: Math.round(81 * (page - 1)),
             viewOffset: 180,
             viewPositio: 0,
             animated: false,
           });
           console.log("time out");
+          setDigitado(false);
           clearTimeout(clear);
         }, 500);
-      }
-      console.log("page entrando " + page);
-      const response = await api.get(`/shows?page=${pagina ? pagina : page}`);
+      } else {
+        console.log("page entrando " + page);
+        const response = await api.get(`/shows?page=${pagina ? pagina : page}`);
 
-      setMovie([
-        ...movie,
-        ...response?.data /*.slice(
+        setMovie([
+          ...movie,
+          ...response?.data /*.slice(
         response.data.length - 20,
         response.data.length**/,
-      ]);
-      setLoading(false);
-      console.log(
-        "informacoes dentro do if " +
-          " tam " +
-          input.length +
-          " tam filmes " +
-          movie.length +
-          " digitado " +
-          digitado
-      );
+        ]);
+        setLoading(false);
+        console.log(
+          "informacoes dentro do if " +
+            " tam " +
+            input.length +
+            " tam filmes " +
+            movie.length +
+            " digitado " +
+            digitado
+        );
 
-      setDigitado(false);
+        setDigitado(false);
+      }
     } else {
       const response = await api.get(`/search/shows?q=${input}`);
       setNewMovie(response.data);
@@ -219,7 +221,7 @@ export default function Home({ navigation }) {
         <List
           data={movie}
           ref={indice}
-          keyExtractor={(item, index) => String(index)}
+          keyExtractor={(item, index) => String(item.id)}
           initialNumToRender={50}
           onEndReachedThreshold={0.01}
           onEndReached={(event) => {
