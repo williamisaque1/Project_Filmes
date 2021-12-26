@@ -44,6 +44,7 @@ export default function Home({ navigation }) {
   const { width, height } = Dimensions.get("window");
   console.log("widht " + width + "  " + "height  " + height);
   const url = "https://api.tvmaze.com";
+  const dispatch = useDispatch();
 
   useEffect(() => {
     console.log("use Memo");
@@ -178,10 +179,10 @@ export default function Home({ navigation }) {
       id,
     });
   }
-  function handleNavigate(id) {
-    navigation.navigate("Details", { id });
+  function handleNavigate(conteudo) {
+    navigation.navigate("Details", { conteudo });
 
-    handleRedux(id);
+    handleRedux(conteudo);
   }
 
   function handleInput(e) {
@@ -246,8 +247,8 @@ export default function Home({ navigation }) {
           numColumns={3}
           renderItem={({ item, index }) => (
             <Link
-              onPress={() =>
-                //handleNavigate(input.length == 0 ? item?.show?.id : item.id)
+              onPress={() => {
+                handleNavigate(item);
                 console.log(
                   "navegar(" +
                     page +
@@ -257,8 +258,8 @@ export default function Home({ navigation }) {
                     item.id +
                     "||" +
                     index
-                )
-              }
+                );
+              }}
               underlayColor="transparent"
             >
               <MovieInfo>

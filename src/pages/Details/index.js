@@ -40,64 +40,60 @@ export default function Details({ navigation }) {
     async function loadDetails() {
       setLoading(true);
 
-      const response = await api.get(
-        `/movie/${id}?api_key=14ff7d5e5b5ac073419275359d9759a0&language=pt-BR`
-      );
-
-      setDetails(response.data);
+      //setDetails(response.data);
       setLoading(false);
     }
 
     loadDetails();
   }, [id]);
-
+  //console.log(id);
   if (loading) {
     return <Skeleton></Skeleton>;
   } else {
     return (
-      <MovieBackground source={{ uri: url + details.poster_path }}>
-        <FlatList
-          data={scroll}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={() => (
-            <Container>
-              <MovieInfo>
-                <MovieImage
-                  source={{ uri: url + details.poster_path }}
-                  resizeMode="stretch"
-                />
+      <MovieBackground source={{ uri: id?.image?.original }}>
+        <Container>
+          <MovieInfo>
+            <MovieImage
+              source={{ uri: id?.image?.medium }}
+              resizeMode="stretch"
+            />
 
-                <MovieDetails>
-                  <Title> {details.original_title} </Title>
+            <MovieDetails>
+              <Title> {id.name} </Title>
+              <ScrollView>
+                <Description>
+                  {" "}
+                  {id.summary
+                    .replace("<p>", "")
+                    .replace("</p>", "")
+                    .replace("<b>", "")
+                    .replace("</b>", "")}{" "}
+                </Description>
+              </ScrollView>
+              <Generes>{id.type}</Generes>
 
-                  <ScrollView onResponderMove={() => {}}>
-                    <Description> {details.overview} </Description>
-                  </ScrollView>
+              <MovieNumbers>
+                <DateInfo>
+                  <Icon name="calendar" color="#ffce00" />
+                  <Date>{id.premiered}</Date>
+                </DateInfo>
 
-                  <Generes>Action, Science Fiction</Generes>
+                <DurationInfo>
+                  <Clock name="clockcircle" color="#ffce00" />
+                  <Duration> {id.premiered} min </Duration>
+                </DurationInfo>
+              </MovieNumbers>
+            </MovieDetails>
+          </MovieInfo>
 
-                  <MovieNumbers>
-                    <DateInfo>
-                      <Icon name="calendar" color="#ffce00" />
-                      <Date>{details.release_date}</Date>
-                    </DateInfo>
-
-                    <DurationInfo>
-                      <Clock name="clockcircle" color="#ffce00" />
-                      <Duration> {details.runtime} min </Duration>
-                    </DurationInfo>
-                  </MovieNumbers>
-                </MovieDetails>
-              </MovieInfo>
-
-              <OthersInfo>
-                <Actors />
-                <Recommendations navigation={navigation} />
-              </OthersInfo>
-            </Container>
-          )}
-        />
+          <OthersInfo>
+            <Actors></Actors>
+          </OthersInfo>
+        </Container>
       </MovieBackground>
     );
   }
 }
+/*  <Actors />
+                <Recommendations navigation={navigation} />*/

@@ -9,11 +9,13 @@ import {
   ActorImage,
   ActorName,
   FalseName,
+  ButtonAcao,
 } from "./styles";
 
 import api from "../../services/api";
 import Skeleton from "../Skeleton component/Skeleton";
 import Axios from "axios";
+import { backgroundColor } from "react-native/Libraries/Components/View/ReactNativeStyleAttributes";
 
 export default function Actors() {
   const movieID = useSelector((state) => state.actors);
@@ -23,20 +25,13 @@ export default function Actors() {
 
   useEffect(() => {
     async function loadActors() {
-      const response = (await api.get("/shows/1/cast")).data;
+      console.log("idd - " + movieID.id);
+      const response = (await api.get(`/shows/${movieID.id}/cast`)).data;
 
       setActors(response);
-      //console.log("resposta", actors?.character.image.medium);
     }
     loadActors();
 
-    /* if (actors != null) {
-      actors.forEach(({ id }) => {
-        console.log("jjjj", id);
-      });
-      
-    }
-*/
     return () => loadActors();
   }, []);
 
@@ -48,10 +43,21 @@ export default function Actors() {
           data={actors}
           horizontal={true}
           keyExtractor={(item) => String(item.person.id)}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <ActorInfo>
-              <ActorImage source={{ uri: item.person.image.medium }} />
-              <ActorName> {item.person.name} </ActorName>
+              <ButtonAcao
+                onPress={() => {
+                  console.log("persinagem " + item.person?.id);
+                }}
+              >
+                <ActorImage source={{ uri: item.person.image?.medium }} />
+              </ButtonAcao>
+              <ActorName
+                style={actors.length - 1 == index && { marginRight: 20 }}
+              >
+                {" "}
+                {item.person?.name}{" "}
+              </ActorName>
             </ActorInfo>
           )}
         />

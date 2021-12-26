@@ -13,14 +13,16 @@ export const MovieInfo = styled.View`
 `;
 
 export const MovieImage = styled.Image`
-  width: 135px;
+  width: 155px;
   height: 250px;
   margin-left: 20px;
+  max-width: 320px;
+  min-width: 120px;
 `;
 
 export const MovieDetails = styled.View`
   background: #2b2b28;
-  max-width: 180px;
+  max-width: 220px;
   min-width: 180px;
   max-height: 250px;
   min-height: 245px;
@@ -42,8 +44,6 @@ export const Description = styled.Text.attrs({
   color: #fff;
   margin-bottom: 5px;
   margin-left: 7px;
-  max-height: 135px;
-  min-height: 135px;
 `;
 
 export const Generes = styled.Text`
