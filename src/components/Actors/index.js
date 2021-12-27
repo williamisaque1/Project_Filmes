@@ -17,7 +17,7 @@ import Skeleton from "../Skeleton component/Skeleton";
 import Axios from "axios";
 import { backgroundColor } from "react-native/Libraries/Components/View/ReactNativeStyleAttributes";
 
-export default function Actors() {
+export default function Actors({ navigation }) {
   const movieID = useSelector((state) => state.actors);
   const url = "https://image.tmdb.org/t/p/w185";
 
@@ -47,8 +47,15 @@ export default function Actors() {
             <ActorInfo>
               <ButtonAcao
                 onPress={() => {
-                  console.log("persinagem " + item.person?.id);
+                  console.log("persinagem " + item.person?.id + "  ");
+                  navigation?.navigate("DetailsActors", {
+                    id: item.person?.id,
+                    img: item.person.image?.medium,
+                  });
+                  // navigation.navigate("Details", { conteudo });
+                  //  navigation.navigate("DetailsActors", item.person?.id);
                 }}
+                style={actors.length - 1 == index && { marginRight: 20 }}
               >
                 <ActorImage source={{ uri: item.person.image?.medium }} />
               </ButtonAcao>

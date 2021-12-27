@@ -7,6 +7,7 @@ export const Container = styled.View`
   margin-top: 10px;
   max-height: 200px;
   min-height: 200px;
+  overflow: hidden;
 `;
 
 export const Name = styled.Text`
@@ -21,7 +22,7 @@ export const List = styled.FlatList``;
 export const ActorInfo = styled.View`
   align-items: center;
   justify-content: center;
-
+  min-width: 113px;
   max-width: 150px;
 `;
 export const ButtonAcao = styled.TouchableOpacity``;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FlatList } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/FontAwesome";
-import Clock from "react-native-vector-icons/AntDesign";
+import Clock from "react-native-vector-icons/FontAwesome";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Container,
@@ -27,7 +27,7 @@ import api from "../../services/api";
 import Skeleton from "../../components/Skeleton component/Skeleton";
 import { ScrollView } from "react-native";
 
-export default function Details({ navigation }) {
+export default function DetailsActors({ navigation }) {
   const [details, setDetails] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -35,17 +35,22 @@ export default function Details({ navigation }) {
 
   const scroll = [{}];
   const id = useSelector((state) => state.actors);
-
+  const idAtor = navigation.getParam("id");
+  const imgFilme = navigation.getParam("img");
+  console.log("iddddd|", idAtor);
   useEffect(() => {
     async function loadDetails() {
       setLoading(true);
+      const response = (await api.get(`/people/${idAtor}`)).data;
+      console.log("conteudoo", response);
+      setDetails(response);
 
-      //setDetails(response.data);
       setLoading(false);
     }
 
     loadDetails();
-  }, [id]);
+  }, []);
+
   //console.log(id);
   if (loading) {
     return <Skeleton></Skeleton>;
@@ -55,41 +60,28 @@ export default function Details({ navigation }) {
         <Container>
           <MovieInfo>
             <MovieImage
-              source={{ uri: id?.image?.medium }}
+              source={{ uri: details.image?.original }}
               resizeMode="stretch"
             />
 
             <MovieDetails>
-              <Title> {id.name} </Title>
+              <Title> {details.name} </Title>
               <ScrollView>
                 <Description>
-                  {" "}
-                  {id.summary
-                    ?.replace("<p>", "")
-                    .replace("</p>", "")
-                    .replace("<b>", "")
-                    .replace("</b>", "")}{" "}
+                  country: {details.country?.name ?? "indisponivel"}
+                </Description>
+                <Description>
+                  genero: {details?.gender ?? "indisponivel"}
                 </Description>
               </ScrollView>
-              <Generes>{id.type}</Generes>
-
               <MovieNumbers>
                 <DateInfo>
-                  <Icon name="calendar" color="#ffce00" />
-                  <Date>{id.premiered}</Date>
+                  <Icon name="birthday-cake" color="#ffce00" />
+                  <Date>{details.birthday ?? "não disponivel"}</Date>
                 </DateInfo>
-
-                <DurationInfo>
-                  <Clock name="clockcircle" color="#ffce00" />
-                  <Duration> {id.premiered} min </Duration>
-                </DurationInfo>
               </MovieNumbers>
             </MovieDetails>
           </MovieInfo>
-
-          <OthersInfo>
-            <Actors navigation={navigation}></Actors>
-          </OthersInfo>
         </Container>
       </MovieBackground>
     );
