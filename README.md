@@ -23,7 +23,6 @@
 />
  </div>
    <div>
- <img width=300 , height=600 src="https://user-images.githubusercontent.com/63307185/148126811-a664ffd2-658d-45c2-ae29-2e02c0a09caf.jpeg
-"
+ <img width=300 , height=600 src="https://user-images.githubusercontent.com/63307185/148126811-a664ffd2-658d-45c2-ae29-2e02c0a09caf.jpeg"
 />
  </div>
