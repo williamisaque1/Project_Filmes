@@ -10,6 +10,9 @@
 - Axios
 - react-navigation-tabs
 - Expo
+- <h2> funcionalidades  </h2>
+- memorização da página atual
+- scroll infinito
 - <h2>Imagem</h2>
  <div>
  <img width=300 , height=600 src="https://user-images.githubusercontent.com/63307185/148126518-dc98f47d-94c2-46b9-b08e-b5cb8d44fafa.jpeg"/>
